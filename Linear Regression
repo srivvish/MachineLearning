@@ -1,0 +1,49 @@
+# Without vector
+
+import numpy as np
+import pandas as pd
+def linearRegression_GD(X,Y,iter=1000,lr=0.01):
+    coef=[]
+    result=[]
+    X=pd.DataFrame(X)
+    #for i in range(0,len(list(pd.DataFrame(X)))+1):
+        #coef.append(0)
+    coef=np.zeros(len(list(pd.DataFrame(X)))+1)
+    for i in range(iter):
+        counter=1
+        hypo=0
+        while counter <= len(coef):
+            if counter-1 == 0:
+                hypo = coef[counter-1]
+            else:
+                hypo=hypo+coef[counter-1]*X.iloc[:,counter-2]
+            counter=counter+1
+        
+        error_1=(hypo-Y)
+        counter=1
+        der=[]
+        newtheta=[]
+        while counter <= len(coef):
+            if counter-1 == 0:
+                error=(error_1*1).sum()
+            else:
+                error=(error_1*list(X.iloc[:,counter-2])).sum()
+            der.append(error)
+            newtheta.append(round(coef[counter-1] - ((lr/len(Y))*error),5))
+            counter=counter+1
+        cost=round((1/(2*len(Y)))*(error_1**2).sum(),10)
+        coef=newtheta[:]
+        result.append([coef,cost])
+        if len(result) >=2 and result[-1][1] > result[-2][1]:
+            print("Check the learning rate.Gradient descent is increasing instead of decreasing")
+            if len(result) == 2:
+                print(result)
+            else:
+                print(result[-5:])
+            break
+        elif len(result) >=2 and result[-1][1] == result[-2][1]:
+            break
+    if len(result) >=2 and round(result[-1][1],5) < round(result[-2][1],5):
+        print("We haven't reached the local minima yet. Try changing iterations or learning rate")
+        
+    return(result[-1])
