@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-def logisticRegression_vector(X,Y,iter=1000,lr=0.01,cutoff=0.5):
+def logisticRegression_regularvector(X,Y,iter=1000,lr=0.01,cutoff=0.5,reg='N',lam=1.5):
     x=np.array(X).T # Need x in (# of colums x # of rows)
     y=np.array(Y).T # Need y in row vector [y1,y2....ym]
     w=np.zeros((x.shape[0],1)) ## shape : [ # of columns in x , 1]
@@ -11,10 +11,15 @@ def logisticRegression_vector(X,Y,iter=1000,lr=0.01,cutoff=0.5):
         Z=np.dot(w.T,x)+b ## computing b + w^t*x. 1 x m [ 1 X # of rows]
         A=(1/(1+np.exp(-Z))) ## Activation function [A1, A2, A3...Am] 1 x m [ 1 X # of rows ]
         E=A-y ## Predicted - Actual [E1, E2.... Em] 1 * m
-        cost=-1/m* (np.sum(np.multiply(y,np.log(A))+np.multiply((1-y),np.log(1-A))))## cost function
-        costf.append(cost)
+        if reg == 'Y':
+            cost=(-1/m)* (np.sum(np.multiply(y,np.log(A))+np.multiply((1-y),np.log(1-A))))+(lam/(2*m)*(np.sum(np.square(w))))## cost function_regularization
+            dw=(1/m)*np.dot(x,E.T) + (lam/m)*w
+        else:
+            cost=(-1/m)* (np.sum(np.multiply(y,np.log(A))+np.multiply((1-y),np.log(1-A))))
+            dw=(1/m)*np.dot(x,E.T)
         ## We didn't use np.dot in above cost function because y and A are row cectors of size1 *m
-        dw=(1/m)*np.dot(x,E.T) ## [number of columns x 1]
+        costf.append(cost)
+         ## [number of columns x 1]## regularization
         db=(1/m)*np.sum(E) ## intercept
         w=w-lr*dw ## updated weights
         b=b-lr*db ## updated intercepts
@@ -26,4 +31,4 @@ def logisticRegression_vector(X,Y,iter=1000,lr=0.01,cutoff=0.5):
     accuracy=(similar/m)*100
     import matplotlib.pyplot as plt
     plt.plot(costf)
-    return (accuracy)
+    return (cost,accuracy)
