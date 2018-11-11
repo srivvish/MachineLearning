@@ -69,5 +69,11 @@ def NN(X,Y,Layer=[3],lr=0.1,iter=10,reg='N',lam=0.01):
     accuracy=(similar/m)*100
     import matplotlib.pyplot as plt
     plt.plot(costf)
+    plt.xlabel('Number of Iterations')
+    plt.ylabel('Cost Function')
+    if reg == 'Y':
+        plt.title('Plot of Cost Function with Regularization')
+    else:
+        plt.title('Plot of Cost Function')
+    plt.show()
     return cost,predict,accuracy
-  
