@@ -10,6 +10,7 @@ def NN(X,Y,Layer=[3],lr=0.1,iter=10):
     L=Layer[:]
     L.insert(0,n_0)
     L.append(Y.shape[0])
+    costf=[]
     d={}
     i=1
     while i <= len(L)-1:
@@ -37,6 +38,7 @@ def NN(X,Y,Layer=[3],lr=0.1,iter=10):
             a+=1
             
         cost=-1/m* (np.sum(np.multiply(Y,np.log(d1["A"+str(len(L)-1)]))+np.multiply((1-Y),np.log(1-d1["A"+str(len(L)-1)]))))
+        costf.append(cost)
         ##backward propogation ###
         a=len(L)-1
         d2={}
@@ -61,4 +63,6 @@ def NN(X,Y,Layer=[3],lr=0.1,iter=10):
     unique, counts = np.unique(predict-Y, return_counts=True)
     similar=dict(zip(unique, counts))[0]
     accuracy=(similar/m)*100
+    import matplotlib.pyplot as plt
+    plt.plot(costf)
     return accuracy,d1["A"+str(len(L)-1)]
