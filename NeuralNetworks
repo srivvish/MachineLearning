@@ -1,7 +1,11 @@
 import numpy as np
 import pandas as pd
 
-def NN(X,Y,Layer=[3],lr=0.1,iter=10,reg='N',lam=0.01):
+def NN(X,Y,Layer=[3],lr=0.1,iter=10,l2Reg='Y',dropReg='N',lam=0.01,keep_prob=0.8):
+    if l2Reg == 'Y' and dropReg == 'Y':
+        print("L2 and Drop Out regularization can't be run at same time" )
+        sys.exit(0)
+        
     np.random.seed(3)
     A=np.array(X).T # Treating it as activation function A_0
     Y=np.array(Y).T
@@ -26,6 +30,12 @@ def NN(X,Y,Layer=[3],lr=0.1,iter=10,reg='N',lam=0.01):
             d1["Z"+str(a)]=np.dot(d["W"+str(a)],d1["A"+str(a-1)]) + d["b"+str(a)]
             #################################################
             d1["A"+str(a)]=np.tanh(d1["Z"+str(a)])
+            ## Drop out regularization code begins ##
+            if dropReg=='Y':
+                d1["D"+str(a)]=np.random.randn(d1["A"+str(a)].shape[0],d1["A"+str(a)].shape[1])
+                d1["D"+str(a)]=d1["D"+str(a)] < keep_prob
+                d1["A"+str(a)]=(np.multiply(d1["A"+str(a)],d1["D"+str(a)]))/keep_prob
+            ## Drop out regularization code ends ##
             #d1["A"+str(a+1)]=np.maximum(0,d1["Z"+str(a+1)])
             if a==len(L)-1: ## predictor/last layer
                 d1["A"+str(a)]=1/(1+np.exp(-d1["Z"+str(a)]))
@@ -34,7 +44,7 @@ def NN(X,Y,Layer=[3],lr=0.1,iter=10,reg='N',lam=0.01):
         
         i=1
         sum=0
-        if reg == 'Y':
+        if l2Reg == 'Y':
             while i <= len(L)-1:
                 sum+=np.sum(np.square(d["W"+str(i)]))
                 i+=1
@@ -48,8 +58,12 @@ def NN(X,Y,Layer=[3],lr=0.1,iter=10,reg='N',lam=0.01):
             if a==len(L)-1: ## last layer
                 d1["dZ" + str(a)]  = d1["A"+str(a)]-Y
             else:
-                d1["dZ" + str(a)]=np.multiply(np.dot(d["W" + str(a+1)].T,d1["dZ" + str(a+1)]),(1-np.power(d1["A"+str(a)],2)))
-            if reg == 'Y':
+                if dropReg=='Y':
+                    d1["dZ" + str(a)]=np.multiply(((np.dot(d["W" + str(a+1)].T,d1["dZ" + str(a+1)]))*d1["D"+str(a)])/keep_prob,(1-np.power(d1["A"+str(a)],2)))
+                else:
+                    d1["dZ" + str(a)]=np.multiply(np.dot(d["W" + str(a+1)].T,d1["dZ" + str(a+1)]),(1-np.power(d1["A"+str(a)],2)))
+                    
+            if l2Reg == 'Y':
                 d1["dW" + str(a)]=(np.dot(d1["dZ" + str(a)],d1["A"+str(a-1)].T)/m)+(lam/m)*d["W"+str(a)] ## regularization
             else:
                 d1["dW" + str(a)]=(np.dot(d1["dZ" + str(a)],d1["A"+str(a-1)].T)/m)
@@ -71,8 +85,10 @@ def NN(X,Y,Layer=[3],lr=0.1,iter=10,reg='N',lam=0.01):
     plt.plot(costf)
     plt.xlabel('Number of Iterations')
     plt.ylabel('Cost Function')
-    if reg == 'Y':
+    if l2Reg == 'Y':
         plt.title('Plot of Cost Function with Regularization')
+    elif dropReg=='Y':
+        plt.title('Plot of Cost Function with Inverted Dropout')
     else:
         plt.title('Plot of Cost Function')
     plt.show()
