@@ -1,12 +1,14 @@
 import numpy as np
 import pandas as pd
-def logisticRegression_regularvector(X,Y,iter=1000,lr=0.01,cutoff=0.5,reg='N',lam=1.5):
+def logisticRegression(X,Y,iter=1000,lr=0.01,cutoff=0.5,reg='N',lam=1.5):
     x=np.array(X).T # Need x in (# of colums x # of rows)
     y=np.array(Y).T # Need y in row vector [y1,y2....ym]
     w=np.zeros((x.shape[0],1)) ## shape : [ # of columns in x , 1]
     b=0
     m=x.shape[1] ## # of rows in vector x
     costf=[]
+    #b=-5.58879715 
+    #w=np.array([[-2.03169656], [3.36025375]])
     for i in range(iter):
         Z=np.dot(w.T,x)+b ## computing b + w^t*x. 1 x m [ 1 X # of rows]
         A=(1/(1+np.exp(-Z))) ## Activation function [A1, A2, A3...Am] 1 x m [ 1 X # of rows ]
@@ -31,4 +33,11 @@ def logisticRegression_regularvector(X,Y,iter=1000,lr=0.01,cutoff=0.5,reg='N',la
     accuracy=(similar/m)*100
     import matplotlib.pyplot as plt
     plt.plot(costf)
+    plt.xlabel('Number of Iterations')
+    plt.ylabel('Cost Function')
+    if reg == 'Y':
+        plt.title('Plot of Cost Function with Regularization')
+    else:
+        plt.title('Plot of Cost Function')
+    plt.show()
     return (cost,accuracy)
