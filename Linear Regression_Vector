@@ -5,18 +5,20 @@ def linearRegression_vector(X,Y,iter=1000,lr=0.01):
     y=np.array(Y).T # Need y in row vector [y1,y2....ym]
     w=np.zeros((x.shape[0],1)) ## shape : [ # of columns in x , 1]
     b=0
-    #b=-5.58879715 
-    #w=np.array([[-2.03169656], [3.36025375]])
+    costf=[]
     for i in range(iter):
         Z=np.dot(w.T,x)+b ## computing b + w^t*x. 1 x m [ 1 X # of rows]
-        #A=(1/(1+np.exp(-Z))) ## Activation function [A1, A2, A3...Am] 1 x m [ 1 X # of rows ]
         E=Z-y ## Predicted - Actual [E1, E2.... Em] 1 * m
         m=x.shape[1] ## # of rows in vector x
-        cost=(-1/(2*m))* (np.sum(np.square(E))) ## cost function
+        cost=(1/(2*m))* (np.sum(np.square(E))) ## cost function
+        costf.append(cost)
         #((1/(2*len(Y)))*(error_1**2).sum(),10)
         ## We didn't use np.dot in above cost function because y and A are row cectors of size1 *m
         dw=(1/m)*np.dot(x,E.T) ## [number of columns x 1]
         db=(1/m)*np.sum(E) ## intercept
         w=w-lr*dw ## updated weights
         b=b-lr*db ## updated intercepts
+
+    import matplotlib.pyplot as plt
+    plt.plot(costf)
     return (w,b,cost)
