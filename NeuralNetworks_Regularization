@@ -1,0 +1,67 @@
+def NN_regular(X,Y,Layer=[3],lr=0.1,iter=10,lam=0.01):
+    np.random.seed(3)
+    A=np.array(X).T # Treating it as activation function A_0
+    Y=np.array(Y).T
+    n_0=A.shape[0]
+    m=A.shape[1]
+    L=Layer[:]
+    L.insert(0,n_0)
+    L.append(1)
+    d={}
+    i=1
+    while i <= len(L)-1:
+        d["W"+str(i)]=np.random.randn(L[i],L[i-1])*0.01
+        d["b"+str(i)]=np.zeros((L[i],1))
+        i+=1
+    costf=[]
+    for itr in range(iter):
+        ### forward propogation ####
+        d1={}
+        d1["A0"]=A
+        a=1
+        while a <= len(L)-1:
+            d1["Z"+str(a)]=np.dot(d["W"+str(a)],d1["A"+str(a-1)]) + d["b"+str(a)]
+            #################################################
+            d1["A"+str(a)]=np.tanh(d1["Z"+str(a)])
+            #d1["A"+str(a+1)]=np.maximum(0,d1["Z"+str(a+1)])
+            if a==len(L)-1: ## predictor/last layer
+                d1["A"+str(a)]=1/(1+np.exp(-d1["Z"+str(a)]))
+            ###############################################33
+            a+=1
+        
+        i=1
+        sum=0
+        while i <= len(L)-1:
+            sum+=np.sum(np.square(d["W"+str(i)]))
+            i+=1
+        cost=((-1/m)* (np.sum(np.multiply(Y,np.log(d1["A"+str(len(L)-1)]))+np.multiply((1-Y),np.log(1-d1["A"+str(len(L)-1)])))))+(lam/(2*m)*sum)
+        costf.append(cost)
+        ##backward propogation ###
+        a=len(L)-1
+        d2={}
+        while a > 0:
+            if a==len(L)-1: ## last layer
+                d1["dZ" + str(a)]  = d1["A"+str(a)]-Y
+            else:
+                d1["dZ" + str(a)]=np.multiply(np.dot(d["W" + str(a+1)].T,d1["dZ" + str(a+1)]),(1-np.power(d1["A"+str(a)],2)))       
+            d1["dW" + str(a)]=(np.dot(d1["dZ" + str(a)],d1["A"+str(a-1)].T)/m)+(lam/m)*d["W"+str(a)] ## regularization
+                               
+            d1["db" + str(a)]=(np.sum(d1["dZ" + str(a)], axis=1,keepdims=True))/m
+            a-=1
+
+        i=1
+        while i <= len(L)-1:
+            d["W"+str(i)]=d["W"+str(i)] - lr * d1["dW" + str(i)]
+            d["b"+str(i)]=d["b"+str(i)] - lr * d1["db" + str(i)]
+            i+=1
+            
+        
+    #print(cost)    
+    predict=np.where(d1["A"+str(len(L)-1)]>0.5,1,0)
+    unique, counts = np.unique(predict-Y, return_counts=True)
+    similar=dict(zip(unique, counts))[0]
+    accuracy=(similar/m)*100
+    import matplotlib.pyplot as plt
+    plt.plot(costf)
+    return cost,predict,accuracy#d1["A"+str(len(L)-1)]
+    #rint(cost)
