@@ -1,7 +1,7 @@
 # MachineLearning
 Python code of Machine Learning algorithms like Linear Regression, Logistic Regression, and Neural Networks. 
 
-In addition to ML algorithms, I have also appended the step by steb implementation of Principal Component Analysis(PCA) using numpy, and compared its output with sckit lear.. 
+In addition to ML algorithms, I have also appended the step by step implementation of Principal Component Analysis(PCA) using numpy, and compared its output with the sckit learn.
 
 I have used the concepts from Andrew Ng's Machine Learning and Deep Learning course in coursera. So big thanks to him.
 
