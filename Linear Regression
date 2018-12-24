@@ -1,11 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import statsmodels.stats.api as sms
-
-from scipy import stats
 from statsmodels.compat import lzip
 from statsmodels.stats import diagnostic as diag
-
+from scipy import stats
 
 class LinearRegression:
 
