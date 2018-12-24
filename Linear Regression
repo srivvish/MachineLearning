@@ -21,7 +21,7 @@ class LinearRegression:
         self.b = np.random.rand()
         return self.w, self.b
         
-    def run_gradient(self):
+    def run_gradient_descent(self):
         self.w, self.b = self.initialize_parameters()
         self.costf=[]
         for i in range(self.iter):
