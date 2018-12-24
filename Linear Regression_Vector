@@ -1,24 +1,96 @@
 import numpy as np
-import pandas as pd
-def linearRegression_vector(X,Y,iter=1000,lr=0.01):
-    x=np.array(X).T # Need x in (# of colums x # of rows)
-    y=np.array(Y).T # Need y in row vector [y1,y2....ym]
-    w=np.zeros((x.shape[0],1)) ## shape : [ # of columns in x , 1]
-    b=0
-    costf=[]
-    for i in range(iter):
-        Z=np.dot(w.T,x)+b ## computing b + w^t*x. 1 x m [ 1 X # of rows]
-        E=Z-y ## Predicted - Actual [E1, E2.... Em] 1 * m
-        m=x.shape[1] ## # of rows in vector x
-        cost=(1/(2*m))* (np.sum(np.square(E))) ## cost function
-        costf.append(cost)
-        #((1/(2*len(Y)))*(error_1**2).sum(),10)
-        ## We didn't use np.dot in above cost function because y and A are row cectors of size1 *m
-        dw=(1/m)*np.dot(x,E.T) ## [number of columns x 1]
-        db=(1/m)*np.sum(E) ## intercept
-        w=w-lr*dw ## updated weights
-        b=b-lr*db ## updated intercepts
+import matplotlib.pyplot as plt
+import statsmodels.stats.api as sms
 
-    import matplotlib.pyplot as plt
-    plt.plot(costf)
-    return (w,b,cost)
+from scipy import stats
+from statsmodels.compat import lzip
+from statsmodels.stats import diagnostic as diag
+
+
+class LinearRegression:
+
+    def __init__(self,X,Y, iter=10, lr=0.01, plot=True):
+        self.X = np.array(X).T
+        self.Y = np.array(Y).T
+        self.iter = iter
+        self.lr = lr
+        self.plot = plot
+        
+    def initialize_parameters(self):
+        self.w = np.random.randn(self.X.shape[0],1)
+        self.b = np.random.rand()
+        return self.w, self.b
+        
+    def run_gradient(self):
+        self.w, self.b = self.initialize_parameters()
+        self.costf=[]
+        for i in range(self.iter):
+
+            self.Z = np.dot(self.w.T, self.X) + self.b
+            self.E = self.Z - self.Y
+            self.m = len(self.X)
+            self.cost = (1 / (2 * self.m)) * (np.sum(np.square(self.E)))
+            self.costf.append(self.cost)
+            self.dw = (1 / self.m) * np.dot(self.X, self.E.T)
+            self.db = (1 / self.m) * np.sum(self.E)
+            self.w = self.w - self.lr * self.dw
+            self.b = self.b - self.lr * self.db
+        
+        # Residual calculation
+        self.predicted = np.dot(self.w.T, self.X) + self.b
+        self.actual = self.Y
+        self.resid = np.subtract(self.actual, self.predicted)
+        
+        if self.plot is True:
+            plt.plot(self.costf)
+            plt.xlabel('Number of Iterations')
+            plt.ylabel('Cost Function')
+            plt.title('Plot of Cost Function')
+        
+        print(f'Coefficient : {self.w}, Intercept: {self.b}, Cost_Function: {self.costf[-5:]}')
+        #return self.w, self.b
+        
+    def predict(self, test_data=None):
+        
+        if not hasattr(self, 'w'):
+            print("The run_gradient() hasn't been run.")
+        
+        if test_data is not None:
+            self.input = test_data.T
+        else:
+            self.input = self.X
+        self.predicted = np.dot(self.w.T, self.input) + self.b
+        self.actual = self.Y
+        self.mean = np.mean(self.actual)
+        self.n = self.input.shape[1]
+        self.k = self.Y.shape[0]
+        self.SSE = np.sum(np.square(self.resid))
+        self.SST = np.sum(np.square(np.subtract(self.actual, self.mean)))
+        self.rsquare = 1 - (self.SSE / self.SST)
+        self.adjrsquare = 1 - ((self.SSE / (self.n-self.k-1)) / (self.SST/(self.n-1)))
+        return self.rsquare, self.adjrsquare
+    
+    def assumptions_check(self):
+        
+        # Normality Assumption Check - Shapiro Wilk Test
+        print(" +++++ Checking for Normality Assumption +++++ ")
+        print("Result of Shapiro Wilk Test :")
+        print(stats.shapiro(self.resid.reshape(-1, 1).ravel()))
+        print(" +++++++++++++++++++++++++++++++++++++++++++++++++++ ")
+        print('\n')
+        
+        # Autocorrelation
+        print(" +++++ Checking for Autocorrelation Assumption +++++ ")
+        print("Result of LJungbox Test :")
+        print(diag.acorr_ljungbox(self.resid.reshape(-1, 1).ravel(), lags = 1))
+        print(" +++++++++++++++++++++++++++++++++++++++++++++++++++ ")
+        print('\n')
+        
+        # Constant Variance
+        print(" +++++ Checking for Constant Variance Assumption +++++ ")
+        print("Result of Breuschpagen Test :")
+        name = ['Lagrange multiplier statistic', 'p-value', 
+               'f-value', 'f p-value']
+        test = sms.het_breuschpagan(self.resid.reshape(-1, 1).ravel(), self.X.T)
+        print(lzip(name, test))
+        print(" +++++++++++++++++++++++++++++++++++++++++++++++++++ ")
