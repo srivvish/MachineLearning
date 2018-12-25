@@ -45,27 +45,30 @@ class LinearRegression:
             plt.ylabel('Cost Function')
             plt.title('Plot of Cost Function')
         
-        print(f'Coefficient : {self.w}, Intercept: {self.b}, Cost_Function: {self.costf[-5:]}')
-        #return self.w, self.b
-        
-    def predict(self, test_data=None):
+        print(f'Coefficient : {self.w}, \n Intercept: {self.b}, \n Cost_Function: {self.costf[-5:]}')
+
+    def predict(self, test_X=None, test_Y=None):
         
         if not hasattr(self, 'w'):
             print("The run_gradient() hasn't been run.")
         
-        if test_data is not None:
-            self.input = test_data.T
+        if test_X is not None and test_Y is not None:
+            self.input_X = np.array(test_X).T
+            self.input_Y = np.array(test_Y).T
         else:
-            self.input = self.X
-        self.predicted = np.dot(self.w.T, self.input) + self.b
-        self.actual = self.Y
+            self.input_X = self.X
+            self.input_Y = self.Y
+        
+        self.predicted = np.dot(self.w.T,self.input_X) + self.b
+        self.actual = self.input_Y
         self.mean = np.mean(self.actual)
-        self.n = self.input.shape[1]
-        self.k = self.Y.shape[0]
+        self.n = self.input_X.shape[1]
+        self.k = self.input_Y.shape[0]
         self.SSE = np.sum(np.square(self.resid))
         self.SST = np.sum(np.square(np.subtract(self.actual, self.mean)))
         self.rsquare = 1 - (self.SSE / self.SST)
         self.adjrsquare = 1 - ((self.SSE / (self.n-self.k-1)) / (self.SST/(self.n-1)))
+        
         return self.rsquare, self.adjrsquare
     
     def assumptions_check(self):
